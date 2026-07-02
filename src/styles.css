@@ -383,3 +383,80 @@ h2 { margin: 0; font-size: 15px; line-height: 1; }
   border-top: 1px solid var(--line);
   padding-top: 14px;
 }
+.rail-secondary,
+.ghost-button {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 900;
+  min-height: 40px;
+}
+
+.rail-secondary {
+  width: 100%;
+  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: #fff;
+}
+
+.connections-page {
+  min-height: 100vh;
+  background: var(--cream);
+  padding: 24px;
+}
+
+.connections-panel {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.connection-card,
+.connection-result {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.connection-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.connection-card p,
+.connection-result p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.connection-card button {
+  border: 0;
+  border-radius: 7px;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 900;
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+.connection-card button:disabled {
+  cursor: wait;
+  opacity: .72;
+}
+
+.connection-result span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (max-width: 620px) {
+  .connection-card { grid-template-columns: 1fr; }
+}

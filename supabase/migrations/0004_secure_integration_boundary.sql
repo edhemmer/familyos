@@ -30,6 +30,9 @@ create table if not exists public.integration_provider_connections (
   provider_environment text not null default 'sandbox',
   display_name text not null,
   external_connection_id text,
+  provider_item_id text,
+  provider_institution_id text,
+  provider_institution_name text,
   connection_status text not null default 'pending',
   sync_status text not null default 'not_started',
   token_storage_status text not null default 'not_stored',
@@ -122,3 +125,4 @@ create policy "Members can insert integration audit log"
   for insert
   to authenticated
   with check (actor_user_id = (select auth.uid()) and (select public.is_household_member(household_id)));
+

@@ -25,6 +25,9 @@ export type IntegrationProviderConnection = {
   providerEnvironment: IntegrationProviderEnvironment;
   displayName: string;
   externalConnectionId: string | null;
+  providerItemId: string | null;
+  providerInstitutionId: string | null;
+  providerInstitutionName: string | null;
   connectionStatus: IntegrationConnectionStatus;
   syncStatus: IntegrationSyncStatus;
   tokenStorageStatus: IntegrationTokenStorageStatus;
@@ -57,3 +60,4 @@ export type IntegrationBoundaryResult<T> = {
   ok: false;
   error: string;
 };
+

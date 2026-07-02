@@ -178,6 +178,9 @@ type IntegrationProviderConnectionRow = {
   provider_environment: IntegrationProviderEnvironment;
   display_name: string;
   external_connection_id: string | null;
+  provider_item_id: string | null;
+  provider_institution_id: string | null;
+  provider_institution_name: string | null;
   connection_status: IntegrationConnectionStatus;
   sync_status: IntegrationSyncStatus;
   token_storage_status: IntegrationTokenStorageStatus;
@@ -251,5 +254,6 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
   },
 });
+
 
 

@@ -5,33 +5,25 @@ Family Office OS is a private household financial operating system intended to b
 ## Current Status
 
 Milestone 1: Security Foundation is implemented and committed.
-
-Milestone 2: Financial Platform Foundation is implemented locally in this working tree.
-
-Milestone 3: Secure Integration Boundary is implemented locally in this working tree.
+Milestone 2: Financial Platform Foundation is implemented and committed.
+Milestone 3: Secure Integration Boundary is implemented and committed.
+Milestone 4: Plaid Link + Sandbox Token Exchange Proof is implemented locally in this working tree.
 
 The app now includes:
 
 - Supabase browser client
 - email/password auth screen
 - protected app shell
-- profile foundation
 - household tenant/ownership foundation
-- household membership roles and statuses
-- initial Row Level Security policies
-- financial domain types
-- financial repository boundary
-- financial service boundary
-- prototype financial service boundary for demo seed data
-- financial platform persistence migration with household-scoped RLS
-- financial audit log and data quality event foundation tables
+- financial domain, repository, and service boundaries
 - server-only integration boundary template
-- integration domain types
 - provider connection placeholder table with no token storage
 - integration audit log table
-- documentation for the security model
+- Plaid server SDK isolated to server-only files
+- minimal protected Connections page using Plaid Link
+- sandbox public-token exchange proof returning `vaulting_required`
 
-The app still does not support real financial data ingestion or real connected accounts.
+The app still does not support transaction sync, real financial ingestion, OpenAI, or AI advisor features.
 
 Do not enter real banking, investment, tax, insurance, estate, legal, identity, account, transaction, balance, or household financial information into the app.
 
@@ -44,31 +36,27 @@ Do not enter real banking, investment, tax, insurance, estate, legal, identity, 
 - pnpm
 - Supabase Auth
 - Supabase Postgres with RLS migrations
+- Plaid server SDK for server-only proof functions
+- react-plaid-link for the protected sandbox UI entry point
 
-The project does not currently have:
-
-- Plaid Link or token exchange
-- transaction sync
-- OpenAI advisor calls
-- financial provider integrations
-- document vault
-- server-side financial business logic runtime
-- provider token storage
-- real financial ingestion
-- dashboards or analytics backed by production financial data
-
-## Supabase Setup
+## Environment Setup
 
 Create a local `.env` file from `.env.example`:
 
 ```bash
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_JWT_SECRET=
+
+PLAID_CLIENT_ID=
+PLAID_SECRET=
+PLAID_ENV=sandbox
 ```
 
-Use the Supabase project URL and anon public key. Do not put service-role keys in browser environment variables.
-
-Server-only integration variables are also documented in `.env.example`. Do not prefix server-only variables with `VITE_`, and do not use them in browser code.
+Only `VITE_` variables belong in browser code. Supabase server variables and Plaid variables are server-only and must never be committed with real values.
 
 ## Required Migrations
 
@@ -81,9 +69,24 @@ supabase/migrations/0003_financial_platform_foundation.sql
 supabase/migrations/0004_secure_integration_boundary.sql
 ```
 
-The first migration creates profiles and profile RLS. The second migration creates `households`, `household_memberships`, ownership helper functions, onboarding RPC, and household RLS. The third migration creates financial foundation tables, financial RLS, audit log storage, and data quality event storage. The fourth migration creates provider connection placeholders, integration audit logging, and integration RLS without storing real provider tokens.
+No migration stores Plaid access tokens or connects transaction sync.
 
-No migration connects Plaid, OpenAI, provider tokens, real financial ingestion, dashboards, analytics, or AI advisor data.
+## Plaid Sandbox Proof
+
+The protected Connections page can request a Plaid Link token from a secure server endpoint and submit the returned `public_token` to a secure exchange endpoint.
+
+Expected server endpoints/functions:
+
+- `/api/plaid-create-link-token`
+- `/api/plaid-exchange-public-token`
+
+Current server templates live in:
+
+- `src/server/plaid/plaidClient.ts`
+- `src/server/functions/plaidCreateLinkToken.ts`
+- `src/server/functions/plaidExchangePublicToken.ts`
+
+When public-token exchange succeeds, the access token is discarded and the browser receives `vaulting_required`. Secure token vaulting/encryption is required before transaction sync.
 
 ## Local Development
 
@@ -97,79 +100,28 @@ pnpm run build
 
 - Unauthenticated users see `AuthPage`.
 - Authenticated users with no household see `HouseholdSetupPage`.
-- Creating a household creates the current user as active `owner`.
-- Authenticated users with active household membership see the existing Family Office OS prototype shell.
-
-## Financial Architecture Boundary
-
-React components must not query Supabase directly for financial data.
-
-Financial access should flow through:
-
-```text
-domain types -> repositories -> services -> UI adapters/components
-```
-
-Current financial foundation files:
-
-- `src/domain/financial.ts`
-- `src/repositories/financialRepository.ts`
-- `src/services/financialService.ts`
-- `src/services/prototypeFinancialService.ts`
-
-The existing prototype UI shell uses `prototypeFinancialService` so seed data remains clearly separated from production financial persistence.
-
-## Secure Integration Boundary
-
-Milestone 3 adds server-only template files under `src/server` for future authenticated integration functions. These files validate server-only environment variables, define an authenticated function template, check tenant authorization, and provide safe placeholders that block Plaid token exchange, transaction sync, and OpenAI advisor calls.
-
-Current integration boundary files:
-
-- `src/domain/integration.ts`
-- `src/server/env.ts`
-- `src/server/authenticatedFunction.ts`
-- `src/server/tenantAuthorization.ts`
-- `src/server/integrations/providerConnectionBoundary.ts`
+- Authenticated users with active household membership see the existing prototype shell.
+- The protected shell includes a Connections entry point for Plaid sandbox proof only.
 
 ## Security Model
 
-`household` is the canonical tenant boundary, based on the Project Corpus and related constitutional documents. Future financial and integration tables reference `household_id` and may also need `user_id` for authorship, confirmation, review, and audit accountability.
-
-RLS is required for every future user or household data table. Service-role keys must never be used in browser code.
+`household` is the canonical tenant boundary. Financial and integration tables reference `household_id`. RLS is required for every user or household data table. Service-role keys and Plaid secrets must never be used in browser code.
 
 ## Data Warning
 
-Current visible financial numbers are prototype-only seed data.
+Current visible financial numbers are prototype-only seed data. Transaction sync is not active. OpenAI is not active. Real financial ingestion requires secure token vaulting, approved provider/import flows, server-side business boundaries, provenance, audit-writing services, and validation in a future milestone.
 
-- Seed data lives in `src/data.ts`.
-- Some UI exploration state uses browser `localStorage`.
-- Seed data and localStorage are for UI exploration only.
-- localStorage must not be used for real financial records.
-- Real financial ingestion requires approved provider/import flows, server-side business boundaries, provenance, audit-writing services, and validation in a future milestone.
+## Security Docs
 
-## Constitutional Documents
-
-The project is governed by constitutional and baseline documents, including:
-
-- `01_Project_Charter.md`
-- `02_Project_Corpus.md`
-- `03_Architecture_Constitution.md`
-- `04_Product_Specification.md`
-- `05_AI_Operating_Manual.md`
-- `06_Roadmap.md`
-- `07_ADRs/0001-initial-architecture.md`
-- `docs/constitution/00_Current_Project_State.md`
-- `docs/constitution/08_Production_Readiness_Report.md`
-- `docs/constitution/09_Technical_Debt_Register.md`
-- `docs/constitution/07_ADRs/0002-production-security-foundation-needed.md`
 - `docs/security/rls_foundation.md`
 - `docs/security/identity_ownership_rls.md`
 - `docs/security/financial_platform_rls.md`
 - `docs/security/secure_integration_boundary.md`
+- `docs/security/plaid_link_security.md`
 
 ## Next Milestone Recommendation
 
-Recommended next milestone: Server Runtime Decision and Auth Verification. Choose the server runtime, implement real Supabase Auth token verification server-side, and add tests for tenant authorization before Plaid, OpenAI, or transaction sync.
+Recommended Milestone 5: Secure Token Vaulting and Server Runtime Verification. Implement real server auth verification, encrypted/vaulted Plaid token storage, RLS-aware metadata writes, and tests before transaction sync.
 
 ## Repository
 

@@ -4,6 +4,7 @@ import type { Household } from "./domain/identity";
 import { getCurrentHousehold } from "./lib/households";
 import { AuthPage } from "./pages/AuthPage";
 import { HouseholdSetupPage } from "./pages/HouseholdSetupPage";
+import { ConnectionsPage } from "./pages/ConnectionsPage";
 import { getPrototypeFinancialShellData, type PrototypeAccount, type PrototypeSourceType } from "./services/prototypeFinancialService";
 
 type ManualEntry = {
@@ -166,17 +167,22 @@ export default function App() {
     return <HouseholdSetupPage onCreated={setHousehold} />;
   }
 
-  return <PrototypeShell />;
+  return <PrototypeShell householdId={household.id} />;
 }
 
-function PrototypeShell() {
+function PrototypeShell({ householdId }: { householdId: string }) {
   const [mode, setMode] = useState<ViewMode>("today");
   const [entries, setEntries] = useState<ManualEntry[]>(readEntries);
   const [reviewed, setReviewed] = useState<string[]>(readReviewed);
   const [entryLabel, setEntryLabel] = useState("Manual balance adjustment");
   const [entryAmount, setEntryAmount] = useState("250");
   const [lastSync, setLastSync] = useState(new Date());
+  const [showConnections, setShowConnections] = useState(false);
   const financialShellData = getPrototypeFinancialShellData();
+
+  if (showConnections) {
+    return <ConnectionsPage householdId={householdId} onBack={() => setShowConnections(false)} />;
+  }
 
   useEffect(() => window.localStorage.setItem("familyos.entries", JSON.stringify(entries)), [entries]);
   useEffect(() => window.localStorage.setItem("familyos.reviewed", JSON.stringify(reviewed)), [reviewed]);
@@ -232,6 +238,7 @@ function PrototypeShell() {
             </button>
           ))}
         </nav>
+        <button className="rail-secondary" type="button" onClick={() => setShowConnections(true)}>Connections</button>
         <div className="security-note">
           <Icon name="lock" />
           <span>Local secure mode. Advisor cannot modify records.</span>
@@ -365,6 +372,8 @@ function PrototypeShell() {
     </div>
   );
 }
+
+
 
 
 
