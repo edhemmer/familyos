@@ -16,6 +16,9 @@ export type IntegrationAuditAction =
   | "token_exchange_blocked"
   | "token_vaulted"
   | "token_vaulting_failed"
+  | "account_discovery_started"
+  | "account_discovery_completed"
+  | "account_discovery_failed"
   | "sync_blocked";
 
 export type IntegrationAuditSeverity = "info" | "warning" | "error";

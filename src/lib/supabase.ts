@@ -205,6 +205,24 @@ type IntegrationAuditLogRow = {
   metadata: Json;
   created_at: string;
 };
+
+type ProviderTokenVaultRow = {
+  id: string;
+  household_id: string;
+  provider_connection_id: string;
+  provider: "plaid";
+  token_ciphertext: string;
+  token_iv: string;
+  token_algorithm: "AES-GCM";
+  key_version: "v1";
+  status: "active" | "revoked" | "rotation_required";
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+};
+
 type Insert<T> = Partial<T>;
 type Update<T> = Partial<T>;
 
@@ -227,6 +245,7 @@ export type Database = {
       financial_data_quality_events: Table<FinancialDataQualityEventRow, Insert<FinancialDataQualityEventRow>, Update<FinancialDataQualityEventRow>>;
       integration_provider_connections: Table<IntegrationProviderConnectionRow, Insert<IntegrationProviderConnectionRow>, Update<IntegrationProviderConnectionRow>>;
       integration_audit_log: Table<IntegrationAuditLogRow, Insert<IntegrationAuditLogRow>, never>;
+      provider_token_vault: Table<ProviderTokenVaultRow, Insert<ProviderTokenVaultRow>, Update<ProviderTokenVaultRow>>;
     };
     Views: Record<string, never>;
     Functions: {

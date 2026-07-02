@@ -9,9 +9,10 @@ Milestone 2: Financial Platform Foundation is implemented and committed.
 Milestone 3: Secure Integration Boundary is implemented and committed.
 Milestone 4: Plaid Link + Sandbox Token Exchange Proof is implemented and committed.
 Milestone 5: Secure Token Vaulting Foundation is implemented locally in this working tree.
-Milestone 6: Cyber Security Hardening is implemented locally in this working tree.
+Cyber Security Hardening checkpoint is implemented and committed.
+Milestone 6: Plaid Account Discovery + Institution Mapping is implemented locally in this working tree.
 
-The app still does not support transaction sync, real financial ingestion, OpenAI, or AI advisor features.
+The app still does not support transaction sync, transaction history ingestion, OpenAI, or AI advisor features.
 
 ## Environment Setup
 
@@ -51,6 +52,7 @@ supabase/migrations/0003_financial_platform_foundation.sql
 supabase/migrations/0004_secure_integration_boundary.sql
 supabase/migrations/0005_token_vault_foundation.sql
 supabase/migrations/0006_cyber_security_hardening.sql
+supabase/migrations/0007_plaid_account_discovery_foundation.sql
 ```
 
 ## Token Vaulting Status
@@ -61,20 +63,35 @@ If `TOKEN_ENCRYPTION_KEY` is missing or too weak, the exchange returns `vaulting
 
 ## Plaid Sandbox Proof
 
-The protected Connections page can request a Plaid Link token from a secure server endpoint and submit the returned `public_token` to a secure exchange endpoint.
+The protected Connections page can request a Plaid Link token from a secure server endpoint, submit the returned `public_token` to a secure exchange endpoint, and trigger server-side account discovery after the token is vaulted.
 
 Expected server endpoints/functions:
 
 - `/api/plaid-create-link-token`
 - `/api/plaid-exchange-public-token`
+- `/api/plaid-discover-accounts`
 
 Current server templates live in:
 
 - `src/server/plaid/plaidClient.ts`
+- `src/server/plaid/plaidAccountMapping.ts`
 - `src/server/functions/plaidCreateLinkToken.ts`
 - `src/server/functions/plaidExchangePublicToken.ts`
+- `src/server/functions/plaidDiscoverAccounts.ts`
 - `src/server/tokenVault/tokenVault.ts`
 - `src/server/tokenVault/plaidTokenVault.ts`
+
+## Plaid Account Discovery
+
+Sandbox account discovery requires:
+
+- Supabase Auth session
+- household setup
+- connected Plaid Link flow
+- vaulted token storage
+- server runtime wired to the secure function templates
+
+Discovery maps Plaid institution/account metadata and latest balances into the financial foundation tables. The browser receives only safe counts and status. Transaction sync is not active. OpenAI is not active.
 
 ## Local Development
 
@@ -105,10 +122,11 @@ Current visible financial numbers are prototype-only seed data. Transaction sync
 - `docs/security/plaid_link_security.md`
 - `docs/security/token_vaulting.md`
 - `docs/security/cyber_hardening.md`
+- `docs/security/plaid_account_discovery.md`
 
 ## Next Milestone Recommendation
 
-Recommended Milestone 6: Server Runtime Verification and Token Vault Repository Wiring. Implement real server auth verification, service-role isolation, token vault read/write repository, and tests for tenant authorization before transaction sync.
+Recommended Milestone 7: Plaid Transaction Sync Foundation. Implement server-side transaction sync only after real server auth verification, service-role isolation, token vault repository wiring, and tenant-isolation tests are complete.
 
 ## Repository
 

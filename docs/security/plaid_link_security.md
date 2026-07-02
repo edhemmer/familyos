@@ -2,7 +2,7 @@
 
 ## Scope
 
-Milestone 4 proved the Plaid sandbox Link flow boundary. Milestone 5 adds encrypted server-side token vaulting foundation. Transaction sync, real financial ingestion, dashboards, analytics, OpenAI, and AI advisor features remain out of scope.
+Milestone 4 proved the Plaid sandbox Link flow boundary. Milestone 5 adds encrypted server-side token vaulting foundation. Milestone 6 adds server-side account discovery and institution/account/balance mapping from the vaulted token. Transaction sync, transaction history ingestion, dashboards, analytics, OpenAI, and AI advisor features remain out of scope.
 
 ## Plaid Link Flow
 
@@ -12,7 +12,7 @@ The intended flow is:
 authenticated user -> protected Connections page -> server create-link-token function -> Plaid Link -> public_token -> server exchange function -> encrypted token vault or safe failure status
 ```
 
-The browser receives only the Link token and safe status metadata. It never receives Plaid secrets, the Plaid `access_token`, decrypted tokens, token ciphertext, or encryption keys.
+The browser receives only the Link token and safe status/count metadata. It never receives Plaid secrets, the Plaid `access_token`, decrypted tokens, token ciphertext, raw Plaid payloads, or encryption keys.
 
 ## Server-Side Token Exchange
 
@@ -50,6 +50,8 @@ It does not store access tokens, public tokens, refresh tokens, client secrets, 
 
 Milestone 5 adds `provider_token_vault`. Normal browser-accessible queries cannot select token rows. Trusted server-side functions are responsible for encrypted token writes and future decrypt-only-for-sync reads.
 
+Milestone 6 uses this vault to decrypt the Plaid access token only inside trusted server-side account discovery code.
+
 ## RLS Summary
 
 Integration records are scoped by `household_id`.
@@ -61,15 +63,15 @@ Integration records are scoped by `household_id`.
 
 ## Not Implemented Yet
 
-Milestone 5 does not implement:
+Milestone 6 does not implement:
 
 - transaction sync
-- account/balance ingestion
+- transaction history ingestion
 - webhook handling
-- real financial data import
+- dashboards or analytics powered by discovered accounts
 - OpenAI or AI advisor features
 - production key rotation
 
 ## Next Security Milestone
 
-Milestone 6 should implement server runtime verification, service-role isolation, token vault repository wiring, and tests before transaction sync is built.
+Milestone 7 should implement transaction sync only after server runtime verification, service-role isolation, token vault repository wiring, and tenant-isolation tests are complete.

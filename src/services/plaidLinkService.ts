@@ -10,6 +10,7 @@ export type PlaidLinkTokenResult = {
 export type PlaidExchangeResult = {
   status: "connected" | "vaulting_required" | "vaulting_failed" | "unauthorized";
   provider: "plaid";
+  providerConnectionId: string;
   itemId: string | null;
   requestId: string | null;
   accessTokenStored: boolean;
@@ -52,15 +53,16 @@ export async function createPlaidLinkToken(householdId: string): Promise<PlaidLi
   };
 }
 
-export async function exchangePlaidPublicToken(householdId: string, publicToken: string): Promise<PlaidExchangeResult> {
+export async function exchangePlaidPublicToken(householdId: string, providerConnectionId: string, publicToken: string): Promise<PlaidExchangeResult> {
   const result = await postJson<{ status: "connected" | "vaulting_required" | "vaulting_failed" | "unauthorized"; provider: "plaid"; item_id: string | null; request_id: string | null; access_token_stored: boolean }>(
     "/api/plaid-exchange-public-token",
-    { householdId, publicToken, providerConnectionId: "pending-server-connection-metadata" },
+    { householdId, providerConnectionId, publicToken },
   );
 
   return {
     status: result.status,
     provider: result.provider,
+    providerConnectionId,
     itemId: result.item_id,
     requestId: result.request_id,
     accessTokenStored: result.access_token_stored,

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Milestone 5 creates the server-side foundation required before Plaid access tokens may be stored persistently. It does not implement transaction sync or real financial ingestion.
+Milestone 5 creates the server-side foundation required before Plaid access tokens may be stored persistently. Milestone 6 uses vaulted Plaid tokens for server-side account discovery. It does not implement transaction sync or transaction history ingestion.
 
 ## Encryption Approach
 
@@ -33,6 +33,8 @@ The browser must never receive:
 - Supabase service-role key
 
 Frontend code receives only safe statuses such as `connected`, `vaulting_required`, `vaulting_failed`, or `unauthorized`.
+
+Account discovery responses may include safe counts and status only. They must never include raw Plaid account payloads, access tokens, decrypted tokens, token ciphertext, or vault metadata.
 
 ## RLS and Table Access Model
 
@@ -67,4 +69,4 @@ Before production live use, the project still needs:
 
 ## Transaction Sync Warning
 
-Transaction sync is not implemented in Milestone 5. Encrypted token storage is only the foundation that makes future sync possible.
+Transaction sync is not implemented in Milestone 6. Encrypted token storage and account discovery are only the foundation that makes future sync possible.
