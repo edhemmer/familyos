@@ -1,4 +1,4 @@
-﻿-- Family Office OS security foundation migration.
+-- Family Office OS security foundation migration.
 -- This migration creates only the identity/profile foundation.
 -- It intentionally does not create financial account, transaction, asset, liability, or document tables.
 

@@ -6,7 +6,7 @@ export type IntegrationConnectionStatus = "not_connected" | "pending" | "connect
 
 export type IntegrationSyncStatus = "not_started" | "ready" | "syncing" | "stale" | "error";
 
-export type IntegrationTokenStorageStatus = "not_stored" | "server_vault_required";
+export type IntegrationTokenStorageStatus = "not_stored" | "server_vault_required" | "vaulted" | "vaulting_failed";
 
 export type IntegrationAuditAction =
   | "connection_placeholder_created"
@@ -14,6 +14,8 @@ export type IntegrationAuditAction =
   | "authorization_checked"
   | "provider_call_blocked"
   | "token_exchange_blocked"
+  | "token_vaulted"
+  | "token_vaulting_failed"
   | "sync_blocked";
 
 export type IntegrationAuditSeverity = "info" | "warning" | "error";
@@ -60,4 +62,5 @@ export type IntegrationBoundaryResult<T> = {
   ok: false;
   error: string;
 };
+
 

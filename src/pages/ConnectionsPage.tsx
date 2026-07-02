@@ -74,8 +74,8 @@ export function ConnectionsPage({ householdId, onBack }: { householdId: string; 
 
         {exchangeResult ? (
           <div className="connection-result">
-            <strong>{exchangeResult.status === "vaulting_required" ? "Token exchange proved" : "Connected"}</strong>
-            <p>The Plaid access token was not returned to the browser and was not stored. Secure token vaulting is required before transaction sync.</p>
+            <strong>{statusTitle(exchangeResult.status)}</strong>
+            <p>{statusMessage(exchangeResult.status)}</p>
             <span>Provider: {exchangeResult.provider}</span>
           </div>
         ) : null}
@@ -86,3 +86,17 @@ export function ConnectionsPage({ householdId, onBack }: { householdId: string; 
   );
 }
 
+
+function statusTitle(status: PlaidExchangeResult["status"]) {
+  if (status === "connected") return "Sandbox connection vaulted";
+  if (status === "vaulting_required") return "Token vault key required";
+  if (status === "vaulting_failed") return "Token vaulting failed";
+  return "Unauthorized";
+}
+
+function statusMessage(status: PlaidExchangeResult["status"]) {
+  if (status === "connected") return "The Plaid access token was encrypted server-side and was not returned to the browser. Transaction sync is still not active.";
+  if (status === "vaulting_required") return "The public-token exchange can succeed, but persistent storage is blocked until TOKEN_ENCRYPTION_KEY is configured. No token is stored.";
+  if (status === "vaulting_failed") return "The public-token exchange can succeed, but encrypted storage failed. No token details are exposed.";
+  return "Your current household role cannot manage Plaid connections.";
+}

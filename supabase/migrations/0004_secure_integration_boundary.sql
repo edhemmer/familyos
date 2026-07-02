@@ -1,4 +1,4 @@
-﻿-- Family Office OS secure integration boundary foundation.
+-- Family Office OS secure integration boundary foundation.
 -- This migration creates provider connection and integration audit boundaries only.
 -- It intentionally does not implement Plaid Link, token exchange, transaction sync, OpenAI advisor calls, or token storage.
 
@@ -48,7 +48,7 @@ create table if not exists public.integration_provider_connections (
   constraint integration_provider_connections_display_name_not_blank check (length(trim(display_name)) > 0),
   constraint integration_provider_connections_status_supported check (connection_status in ('not_connected', 'pending', 'connected', 'needs_attention', 'disconnected', 'disabled')),
   constraint integration_provider_connections_sync_status_supported check (sync_status in ('not_started', 'ready', 'syncing', 'stale', 'error')),
-  constraint integration_provider_connections_token_storage_supported check (token_storage_status in ('not_stored', 'server_vault_required')),
+  constraint integration_provider_connections_token_storage_supported check (token_storage_status in ('not_stored', 'server_vault_required', 'vaulted', 'vaulting_failed')),
   constraint integration_provider_connections_no_token_metadata check (not (metadata ? 'access_token') and not (metadata ? 'public_token') and not (metadata ? 'refresh_token') and not (metadata ? 'secret')),
   constraint integration_provider_connections_external_unique unique (household_id, provider, external_connection_id)
 );
@@ -65,7 +65,7 @@ create table if not exists public.integration_audit_log (
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   constraint integration_audit_log_provider_supported check (provider is null or provider in ('plaid', 'manual', 'file_import', 'other')),
-  constraint integration_audit_log_action_supported check (action in ('connection_placeholder_created', 'connection_placeholder_updated', 'authorization_checked', 'provider_call_blocked', 'token_exchange_blocked', 'sync_blocked')),
+  constraint integration_audit_log_action_supported check (action in ('connection_placeholder_created', 'connection_placeholder_updated', 'authorization_checked', 'provider_call_blocked', 'token_exchange_blocked', 'token_vaulted', 'token_vaulting_failed', 'sync_blocked')),
   constraint integration_audit_log_severity_supported check (severity in ('info', 'warning', 'error')),
   constraint integration_audit_log_message_not_blank check (length(trim(message)) > 0),
   constraint integration_audit_log_no_token_metadata check (not (metadata ? 'access_token') and not (metadata ? 'public_token') and not (metadata ? 'refresh_token') and not (metadata ? 'secret'))
@@ -125,4 +125,5 @@ create policy "Members can insert integration audit log"
   for insert
   to authenticated
   with check (actor_user_id = (select auth.uid()) and (select public.is_household_member(household_id)));
+
 

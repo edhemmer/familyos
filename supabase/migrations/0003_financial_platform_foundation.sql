@@ -1,4 +1,4 @@
-﻿-- Family Office OS financial platform foundation.
+-- Family Office OS financial platform foundation.
 -- This migration creates financial domain persistence and RLS boundaries only.
 -- It intentionally does not add Plaid, OpenAI, provider tokens, ingestion jobs, dashboards, or real financial data.
 

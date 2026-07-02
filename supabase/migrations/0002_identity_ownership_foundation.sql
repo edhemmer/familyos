@@ -1,4 +1,4 @@
-﻿-- Family Office OS identity and ownership foundation.
+-- Family Office OS identity and ownership foundation.
 -- Canonical tenant term from the project corpus/charter: household.
 -- This migration creates household ownership only. It intentionally does not create financial tables.
 

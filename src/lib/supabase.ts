@@ -242,12 +242,22 @@ export type Database = {
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const serviceRoleLeak = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your local .env file.");
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+if (serviceRoleLeak) {
+  throw new Error("VITE_SUPABASE_SERVICE_ROLE_KEY must never be exposed to browser code.");
+}
+
+const parsedSupabaseUrl = new URL(supabaseUrl);
+if (parsedSupabaseUrl.protocol !== "https:") {
+  throw new Error("VITE_SUPABASE_URL must be a HTTPS Supabase project URL.");
+}
+
+export const supabase = createClient<Database>(parsedSupabaseUrl.toString().replace(/\/$/, ""), supabaseAnonKey.trim(), {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
