@@ -96,8 +96,10 @@ type FinancialTransactionRow = {
   account_id: string;
   institution_id: string | null;
   provider_transaction_id: string | null;
+  provider_account_id: string | null;
   transaction_date: string;
   posted_date: string | null;
+  authorized_date: string | null;
   description: string;
   merchant_name: string | null;
   amount: number;
@@ -105,6 +107,8 @@ type FinancialTransactionRow = {
   direction: FinancialTransactionDirection;
   category_id: string | null;
   category_name: string | null;
+  category_primary: string | null;
+  category_detailed: string | null;
   pending: boolean;
   transfer: boolean;
   review_status: FinancialTransactionReviewStatus;
@@ -114,6 +118,7 @@ type FinancialTransactionRow = {
   last_synced_at: string | null;
   source_system: string;
   source_record_id: string | null;
+  removed_at: string | null;
   created_at: string;
   updated_at: string;
   created_by: string | null;
@@ -223,6 +228,21 @@ type ProviderTokenVaultRow = {
   revoked_at: string | null;
 };
 
+type PlaidTransactionSyncStateRow = {
+  id: string;
+  household_id: string;
+  provider_connection_id: string;
+  cursor: string | null;
+  status: "idle" | "syncing" | "completed" | "failed" | "requires_relink";
+  last_started_at: string | null;
+  last_completed_at: string | null;
+  last_failed_at: string | null;
+  last_error_code: string | null;
+  last_error_message: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type Insert<T> = Partial<T>;
 type Update<T> = Partial<T>;
 
@@ -246,6 +266,7 @@ export type Database = {
       integration_provider_connections: Table<IntegrationProviderConnectionRow, Insert<IntegrationProviderConnectionRow>, Update<IntegrationProviderConnectionRow>>;
       integration_audit_log: Table<IntegrationAuditLogRow, Insert<IntegrationAuditLogRow>, never>;
       provider_token_vault: Table<ProviderTokenVaultRow, Insert<ProviderTokenVaultRow>, Update<ProviderTokenVaultRow>>;
+      plaid_transaction_sync_state: Table<PlaidTransactionSyncStateRow, Insert<PlaidTransactionSyncStateRow>, Update<PlaidTransactionSyncStateRow>>;
     };
     Views: Record<string, never>;
     Functions: {

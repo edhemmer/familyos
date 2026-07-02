@@ -4,7 +4,7 @@
 
 Milestone 6 adds server-side Plaid account discovery and institution mapping. It uses a vaulted Plaid access token to fetch safe account metadata and latest balance values, then maps them into the existing financial platform tables.
 
-This milestone does not implement transaction sync, transaction history ingestion, dashboards, analytics, OpenAI, or an AI advisor.
+This milestone does not implement dashboards, analytics, OpenAI, or an AI advisor. Milestone 7 adds the server-side transaction sync foundation after account discovery.
 
 ## Flow
 
@@ -96,4 +96,4 @@ Data quality events are created when:
 
 ## Next Milestone
 
-Transaction sync should be the next milestone only after server runtime auth verification, service-role isolation, token vault repository wiring, and tenant-isolation tests are in place.
+Milestone 7 adds transaction sync foundation. Dashboards, reporting, analytics, and AI advisor features remain later milestones.

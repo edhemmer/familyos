@@ -8,11 +8,12 @@ Milestone 1: Security Foundation is implemented and committed.
 Milestone 2: Financial Platform Foundation is implemented and committed.
 Milestone 3: Secure Integration Boundary is implemented and committed.
 Milestone 4: Plaid Link + Sandbox Token Exchange Proof is implemented and committed.
-Milestone 5: Secure Token Vaulting Foundation is implemented locally in this working tree.
+Milestone 5: Secure Token Vaulting Foundation is implemented and committed.
 Cyber Security Hardening checkpoint is implemented and committed.
-Milestone 6: Plaid Account Discovery + Institution Mapping is implemented locally in this working tree.
+Milestone 6: Plaid Account Discovery + Institution Mapping is implemented and committed.
+Milestone 7: Plaid Transaction Sync + Reconciliation Foundation is implemented locally in this working tree.
 
-The app still does not support transaction sync, transaction history ingestion, OpenAI, or AI advisor features.
+The app still does not support dashboards, reporting, analytics, OpenAI, or AI advisor features over synced transactions.
 
 ## Environment Setup
 
@@ -53,6 +54,7 @@ supabase/migrations/0004_secure_integration_boundary.sql
 supabase/migrations/0005_token_vault_foundation.sql
 supabase/migrations/0006_cyber_security_hardening.sql
 supabase/migrations/0007_plaid_account_discovery_foundation.sql
+supabase/migrations/0008_plaid_transaction_sync_foundation.sql
 ```
 
 ## Token Vaulting Status
@@ -63,21 +65,24 @@ If `TOKEN_ENCRYPTION_KEY` is missing or too weak, the exchange returns `vaulting
 
 ## Plaid Sandbox Proof
 
-The protected Connections page can request a Plaid Link token from a secure server endpoint, submit the returned `public_token` to a secure exchange endpoint, and trigger server-side account discovery after the token is vaulted.
+The protected Connections page can request a Plaid Link token from a secure server endpoint, submit the returned `public_token` to a secure exchange endpoint, trigger server-side account discovery after the token is vaulted, and trigger server-side transaction sync after discovery.
 
 Expected server endpoints/functions:
 
 - `/api/plaid-create-link-token`
 - `/api/plaid-exchange-public-token`
 - `/api/plaid-discover-accounts`
+- `/api/plaid-sync-transactions`
 
 Current server templates live in:
 
 - `src/server/plaid/plaidClient.ts`
 - `src/server/plaid/plaidAccountMapping.ts`
+- `src/server/plaid/plaidTransactionMapping.ts`
 - `src/server/functions/plaidCreateLinkToken.ts`
 - `src/server/functions/plaidExchangePublicToken.ts`
 - `src/server/functions/plaidDiscoverAccounts.ts`
+- `src/server/functions/plaidSyncTransactions.ts`
 - `src/server/tokenVault/tokenVault.ts`
 - `src/server/tokenVault/plaidTokenVault.ts`
 
@@ -91,7 +96,20 @@ Sandbox account discovery requires:
 - vaulted token storage
 - server runtime wired to the secure function templates
 
-Discovery maps Plaid institution/account metadata and latest balances into the financial foundation tables. The browser receives only safe counts and status. Transaction sync is not active. OpenAI is not active.
+Discovery maps Plaid institution/account metadata and latest balances into the financial foundation tables. The browser receives only safe counts and status. OpenAI is not active.
+
+## Plaid Transaction Sync
+
+Sandbox transaction sync requires:
+
+- Supabase Auth session
+- household setup
+- connected Plaid Link flow
+- vaulted token storage
+- successful account discovery
+- server runtime wired to the secure function templates
+
+Transaction sync maps Plaid transaction source fields into `financial_transactions`, stores one Plaid cursor per provider connection, preserves provenance, prevents duplicate provider transactions, and soft-archives removed transactions. Dashboard/reporting are not wired to synced transactions yet. OpenAI is not active.
 
 ## Local Development
 
@@ -111,7 +129,7 @@ Any secret pasted into chat, logs, screenshots, or support tools should be treat
 
 ## Data Warning
 
-Current visible financial numbers are prototype-only seed data. Transaction sync is not active. OpenAI is not active. Real financial ingestion requires deployed server runtime, verified auth, token vault repository wiring, provenance, audit-writing services, and validation in a future milestone.
+Current visible dashboard numbers are prototype-only seed data. Transaction sync foundation is server-side only and dashboard/reporting are not active. OpenAI is not active. Real financial ingestion requires deployed server runtime, verified auth, token vault repository wiring, provenance, audit-writing services, and validation before production use.
 
 ## Security Docs
 
@@ -123,10 +141,11 @@ Current visible financial numbers are prototype-only seed data. Transaction sync
 - `docs/security/token_vaulting.md`
 - `docs/security/cyber_hardening.md`
 - `docs/security/plaid_account_discovery.md`
+- `docs/security/plaid_transaction_sync.md`
 
 ## Next Milestone Recommendation
 
-Recommended Milestone 7: Plaid Transaction Sync Foundation. Implement server-side transaction sync only after real server auth verification, service-role isolation, token vault repository wiring, and tenant-isolation tests are complete.
+Recommended Milestone 8: Server Runtime Wiring + Sync Verification. Wire the secure function templates into the deployed server runtime, verify Supabase Auth tokens server-side, add service-role isolation, and add tenant-isolation tests before dashboards/reporting use synced transaction data.
 
 ## Repository
 

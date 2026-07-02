@@ -19,6 +19,9 @@ export type IntegrationAuditAction =
   | "account_discovery_started"
   | "account_discovery_completed"
   | "account_discovery_failed"
+  | "transaction_sync_started"
+  | "transaction_sync_completed"
+  | "transaction_sync_failed"
   | "sync_blocked";
 
 export type IntegrationAuditSeverity = "info" | "warning" | "error";

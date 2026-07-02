@@ -22,7 +22,7 @@ export type FinancialTransactionReviewStatus = "unreviewed" | "reviewed" | "need
 
 export type FinancialTransactionSource = "manual" | "provider" | "imported" | "system";
 
-export type FinancialSyncStatus = "not_synced" | "syncing" | "synced" | "stale" | "error";
+export type FinancialSyncStatus = "not_synced" | "syncing" | "synced" | "stale" | "error" | "removed";
 
 export type FinancialConnectionStatus = "not_connected" | "connected" | "needs_attention" | "disconnected";
 
@@ -105,8 +105,10 @@ export type FinancialTransaction = {
   accountId: string;
   institutionId: string | null;
   providerTransactionId: string | null;
+  providerAccountId: string | null;
   transactionDate: string;
   postedDate: string | null;
+  authorizedDate: string | null;
   description: string;
   merchantName: string | null;
   amount: number;
@@ -114,6 +116,8 @@ export type FinancialTransaction = {
   direction: FinancialTransactionDirection;
   categoryId: string | null;
   categoryName: string | null;
+  categoryPrimary: string | null;
+  categoryDetailed: string | null;
   pending: boolean;
   transfer: boolean;
   reviewStatus: FinancialTransactionReviewStatus;
@@ -123,6 +127,7 @@ export type FinancialTransaction = {
   lastSyncedAt: string | null;
   sourceSystem: string;
   sourceRecordId: string | null;
+  removedAt: string | null;
   createdAt: string;
   updatedAt: string;
   createdBy: string | null;

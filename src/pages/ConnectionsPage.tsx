@@ -2,14 +2,17 @@ import { useCallback, useEffect, useState } from "react";
 import { usePlaidLink } from "react-plaid-link";
 import { discoverPlaidAccounts, type PlaidAccountDiscoveryResult } from "../services/plaidAccountDiscoveryService";
 import { createPlaidLinkToken, exchangePlaidPublicToken, type PlaidExchangeResult } from "../services/plaidLinkService";
+import { syncPlaidTransactions, type PlaidTransactionSyncResult } from "../services/plaidTransactionSyncService";
 
 export function ConnectionsPage({ householdId, onBack }: { householdId: string; onBack: () => void }) {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [discoveryLoading, setDiscoveryLoading] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [exchangeResult, setExchangeResult] = useState<PlaidExchangeResult | null>(null);
   const [discoveryResult, setDiscoveryResult] = useState<PlaidAccountDiscoveryResult | null>(null);
+  const [syncResult, setSyncResult] = useState<PlaidTransactionSyncResult | null>(null);
   const [providerConnectionId, setProviderConnectionId] = useState<string | null>(null);
   const [openWhenReady, setOpenWhenReady] = useState(false);
 
@@ -17,6 +20,7 @@ export function ConnectionsPage({ householdId, onBack }: { householdId: string; 
     setLoading(true);
     setError(null);
     setDiscoveryResult(null);
+    setSyncResult(null);
     try {
       const connectionId = providerConnectionId ?? crypto.randomUUID();
       setProviderConnectionId(connectionId);
@@ -46,6 +50,7 @@ export function ConnectionsPage({ householdId, onBack }: { householdId: string; 
     setError(null);
     setExchangeResult(null);
     setDiscoveryResult(null);
+    setSyncResult(null);
     try {
       setProviderConnectionId(crypto.randomUUID());
       const result = await createPlaidLinkToken(householdId);
@@ -68,6 +73,7 @@ export function ConnectionsPage({ householdId, onBack }: { householdId: string; 
     setDiscoveryLoading(true);
     setError(null);
     setDiscoveryResult(null);
+    setSyncResult(null);
     try {
       const result = await discoverPlaidAccounts(householdId, connectionId);
       setDiscoveryResult(result);
@@ -78,7 +84,28 @@ export function ConnectionsPage({ householdId, onBack }: { householdId: string; 
     }
   }
 
+  async function handleSyncTransactions() {
+    const connectionId = discoveryResult?.providerConnectionId ?? exchangeResult?.providerConnectionId ?? providerConnectionId;
+    if (!connectionId) {
+      setError("A discovered Plaid connection is required before transaction sync.");
+      return;
+    }
+
+    setSyncLoading(true);
+    setError(null);
+    setSyncResult(null);
+    try {
+      const result = await syncPlaidTransactions(householdId, connectionId);
+      setSyncResult(result);
+    } catch (syncError) {
+      setError(syncError instanceof Error ? syncError.message : "Unable to sync Plaid transactions.");
+    } finally {
+      setSyncLoading(false);
+    }
+  }
+
   const canDiscoverAccounts = exchangeResult?.status === "connected" && exchangeResult.accessTokenStored;
+  const canSyncTransactions = discoveryResult?.status === "completed";
 
   return (
     <main className="connections-page">
@@ -94,7 +121,7 @@ export function ConnectionsPage({ householdId, onBack }: { householdId: string; 
         <div className="connection-card">
           <div>
             <strong>Plaid sandbox</strong>
-            <p>Connects through trusted server-side functions, vaults the access token, and can discover institution/account metadata. Transaction sync is not active.</p>
+            <p>Connects through trusted server-side functions, vaults the access token, discovers account metadata, and can sync transactions. Dashboard reporting is not active.</p>
           </div>
           <button type="button" onClick={handleConnect} disabled={loading || (linkToken !== null && !ready)}>
             {loading ? "Working..." : "Connect bank account"}
@@ -126,10 +153,28 @@ export function ConnectionsPage({ householdId, onBack }: { householdId: string; 
               <span>Balances: {discoveryResult.balancesUpdated}</span>
               <span>Data quality: {discoveryResult.dataQualityEventsCreated}</span>
             </div>
+            {canSyncTransactions ? (
+              <button type="button" onClick={handleSyncTransactions} disabled={syncLoading}>
+                {syncLoading ? "Syncing..." : "Sync transactions"}
+              </button>
+            ) : null}
           </div>
         ) : null}
 
-        <p className="auth-warning">Sandbox connection foundation only. Do not use real financial accounts. Account discovery stores metadata and latest balances only. Transactions, analytics, and AI advisor features are not enabled.</p>
+        {syncResult ? (
+          <div className="connection-result">
+            <strong>{syncTitle(syncResult.status)}</strong>
+            <p>{syncResult.message}</p>
+            <div className="connection-summary-grid">
+              <span>Added: {syncResult.addedCount}</span>
+              <span>Modified: {syncResult.modifiedCount}</span>
+              <span>Removed: {syncResult.removedCount}</span>
+              <span>Warnings: {syncResult.warningsCount}</span>
+            </div>
+          </div>
+        ) : null}
+
+        <p className="auth-warning">Sandbox connection foundation only. Do not use real financial accounts. Transaction sync writes server-side records, but dashboard/reporting, analytics, budgeting, categorization AI, and AI advisor features are not enabled.</p>
       </section>
     </main>
   );
@@ -154,4 +199,11 @@ function discoveryTitle(status: PlaidAccountDiscoveryResult["status"]) {
   if (status === "blocked") return "Account discovery blocked";
   if (status === "unauthorized") return "Account discovery unauthorized";
   return "Account discovery failed";
+}
+
+function syncTitle(status: PlaidTransactionSyncResult["status"]) {
+  if (status === "completed") return "Transaction sync complete";
+  if (status === "blocked") return "Transaction sync blocked";
+  if (status === "unauthorized") return "Transaction sync unauthorized";
+  return "Transaction sync failed";
 }
