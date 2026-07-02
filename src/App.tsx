@@ -4,13 +4,13 @@ import type { Household } from "./domain/identity";
 import { getCurrentHousehold } from "./lib/households";
 import { AuthPage } from "./pages/AuthPage";
 import { HouseholdSetupPage } from "./pages/HouseholdSetupPage";
-import { cashForecast, goals, obligations, seedAccounts, seedAttention, type Account, type SourceType } from "./data";
+import { getPrototypeFinancialShellData, type PrototypeAccount, type PrototypeSourceType } from "./services/prototypeFinancialService";
 
 type ManualEntry = {
   id: string;
   label: string;
   amount: number;
-  source: SourceType;
+  source: PrototypeSourceType;
   createdAt: string;
 };
 
@@ -60,7 +60,7 @@ function Icon({ name }: { name: string }) {
   );
 }
 
-function SourceBadge({ source }: { source: SourceType }) {
+function SourceBadge({ source }: { source: PrototypeSourceType }) {
   return <span className={`source source-${source.toLowerCase()}`}>{source}</span>;
 }
 
@@ -95,7 +95,7 @@ function MiniLine({ values }: { values: number[] }) {
   );
 }
 
-function AccountRow({ account }: { account: Account }) {
+function AccountRow({ account }: { account: PrototypeAccount }) {
   return (
     <div className="account-row">
       <div>
@@ -176,25 +176,26 @@ function PrototypeShell() {
   const [entryLabel, setEntryLabel] = useState("Manual balance adjustment");
   const [entryAmount, setEntryAmount] = useState("250");
   const [lastSync, setLastSync] = useState(new Date());
+  const financialShellData = getPrototypeFinancialShellData();
 
   useEffect(() => window.localStorage.setItem("familyos.entries", JSON.stringify(entries)), [entries]);
   useEffect(() => window.localStorage.setItem("familyos.reviewed", JSON.stringify(reviewed)), [reviewed]);
 
   const manualTotal = entries.reduce((total, entry) => total + entry.amount, 0);
-  const netWorth = seedAccounts.reduce((total, account) => total + account.balance, 0) + manualTotal;
-  const dayChange = seedAccounts.reduce((total, account) => total + account.dayChange, 0) + manualTotal;
-  const liquidity = seedAccounts.filter((account) => account.domain === "Cash").reduce((total, account) => total + account.balance, 0);
-  const liabilities = Math.abs(seedAccounts.filter((account) => account.domain === "Liability").reduce((total, account) => total + account.balance, 0));
-  const confidence = Math.round(seedAccounts.reduce((total, account) => total + account.confidence, 0) / seedAccounts.length);
-  const openAttention = seedAttention.filter((item) => !reviewed.includes(item.id));
+  const netWorth = financialShellData.accounts.reduce((total, account) => total + account.balance, 0) + manualTotal;
+  const dayChange = financialShellData.accounts.reduce((total, account) => total + account.dayChange, 0) + manualTotal;
+  const liquidity = financialShellData.accounts.filter((account) => account.domain === "Cash").reduce((total, account) => total + account.balance, 0);
+  const liabilities = Math.abs(financialShellData.accounts.filter((account) => account.domain === "Liability").reduce((total, account) => total + account.balance, 0));
+  const confidence = Math.round(financialShellData.accounts.reduce((total, account) => total + account.confidence, 0) / financialShellData.accounts.length);
+  const openAttention = financialShellData.attentionItems.filter((item) => !reviewed.includes(item.id));
 
   const domainTotals = useMemo(() => {
     const totals = new Map<string, number>();
-    seedAccounts.forEach((account) => totals.set(account.domain, Math.abs((totals.get(account.domain) ?? 0) + account.balance)));
+    financialShellData.accounts.forEach((account) => totals.set(account.domain, Math.abs((totals.get(account.domain) ?? 0) + account.balance)));
     return Array.from(totals, ([domain, value]) => ({ domain, value }));
   }, []);
 
-  function addEntry(source: SourceType) {
+  function addEntry(source: PrototypeSourceType) {
     const amount = Number(entryAmount);
     if (!entryLabel.trim() || !Number.isFinite(amount)) return;
     setEntries((current) => [
@@ -269,7 +270,7 @@ function PrototypeShell() {
               <span>Traceable to source</span>
             </div>
             <div className="accounts-list">
-              {seedAccounts.map((account) => <AccountRow key={account.id} account={account} />)}
+              {financialShellData.accounts.map((account) => <AccountRow key={account.id} account={account} />)}
             </div>
           </section>
 
@@ -293,9 +294,9 @@ function PrototypeShell() {
 
           <section className="panel cash-panel">
             <div className="section-head"><div><Icon name="cash" /><h2>Cash Flow</h2></div><span>30 days</span></div>
-            <MiniLine values={cashForecast} />
+            <MiniLine values={financialShellData.cashForecast} />
             <div className="forecast-row">
-              {cashForecast.map((value, index) => <span key={index}>{compactMoney.format(value * 1000)}</span>)}
+              {financialShellData.cashForecast.map((value, index) => <span key={index}>{compactMoney.format(value * 1000)}</span>)}
             </div>
           </section>
 
@@ -336,9 +337,9 @@ function PrototypeShell() {
             </div>
           </section>
 
-          <section className="panel goals-panel">
+          <section className="panel financialShellData.goals-panel">
             <div className="section-head"><div><Icon name="today" /><h2>Goals</h2></div></div>
-            {goals.map((goal) => {
+            {financialShellData.goals.map((goal) => {
               const pct = Math.round((goal.current / goal.target) * 100);
               return (
                 <div key={goal.name} className="goal-row">
@@ -350,9 +351,9 @@ function PrototypeShell() {
             })}
           </section>
 
-          <section className="panel obligations-panel">
+          <section className="panel financialShellData.obligations-panel">
             <div className="section-head"><div><Icon name="docs" /><h2>Obligations</h2></div></div>
-            {obligations.map((item) => (
+            {financialShellData.obligations.map((item) => (
               <div key={item.name} className="obligation-row">
                 <div><strong>{item.name}</strong><span>Due in {item.due}</span></div>
                 <div><strong>{money.format(item.amount)}</strong><span className={item.status === "Review required" ? "warn" : "good"}>{item.status}</span></div>
@@ -364,5 +365,7 @@ function PrototypeShell() {
     </div>
   );
 }
+
+
 
 

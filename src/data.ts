@@ -1,6 +1,6 @@
 ﻿// Family Office OS prototype data only.
 // This is not real user financial data.
-// Future real financial data must come from a production security foundation with authenticated, authorization-protected durable storage.
+// This is not production storage and must not be used for real financial decisions. Future real data must come from authenticated, RLS-protected persistence through the financial repository and service layers.
 
 export type SourceType = "Synced" | "Manual" | "Imported" | "Calculated";
 
@@ -54,3 +54,4 @@ export const goals = [
   { name: "Quarterly tax reserve", current: 31200, target: 42000, date: "Sep 2026" },
   { name: "Auto loan payoff", current: 6200, target: 18400, date: "Mar 2027" },
 ];
+
